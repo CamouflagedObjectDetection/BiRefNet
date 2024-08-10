@@ -5,13 +5,13 @@ import math
 class Config():
     def __init__(self) -> None:
         # PATH settings
-        self.sys_home_dir = os.environ['HOME']     # Make up your file system as: SYS_HOME_DIR/codes/dis/BiRefNet, SYS_HOME_DIR/datasets/dis/xx, SYS_HOME_DIR/weights/xx
+        self.sys_home_dir = os.getcwd()     # Make up your file system as: SYS_HOME_DIR/codes/dis/BiRefNet, SYS_HOME_DIR/datasets/dis/xx, SYS_HOME_DIR/weights/xx
 
         # TASK settings
-        self.task = ['DIS5K', 'COD', 'HRSOD', 'General', 'Portrait'][0]
+        self.task = ['DIS5K', 'COD', 'HRSOD', 'General', 'Portrait'][1]
         self.training_set = {
             'DIS5K': ['DIS-TR', 'DIS-TR+DIS-TE1+DIS-TE2+DIS-TE3+DIS-TE4'][0],
-            'COD': 'TR-COD10K+TR-CAMO',
+            'COD': 'TR-COD10K+TR-CAMO', #TR-COD10K+TR-CAMO
             'HRSOD': ['TR-DUTS', 'TR-HRSOD', 'TR-UHRSD', 'TR-DUTS+TR-HRSOD', 'TR-DUTS+TR-UHRSD', 'TR-HRSOD+TR-UHRSD', 'TR-DUTS+TR-HRSOD+TR-UHRSD'][5],
             'General': 'DIS-TE1+DIS-TE2+DIS-TE3+DIS-TE4+DIS-TR+TR-HRSOD+TE-HRSOD+TR-HRS10K+TE-HRS10K+TR-UHRSD+TE-UHRSD+TR-P3M-10k+TE-P3M-500-NP+TE-P3M-500-P+TR-humans',    # leave DIS-VD for evaluation.
             'Portrait': 'TR-P3M-10k+TE-P3M-500-NP+TR-humans+TR-Distrinctions-646',
@@ -117,7 +117,7 @@ class Config():
         self.lambda_adv_d = 3. * (self.lambda_adv_g > 0)
 
         # PATH settings - inactive
-        self.data_root_dir = os.path.join(self.sys_home_dir, 'datasets/dis')
+        self.data_root_dir = os.path.join(self.sys_home_dir, 'datasets')
         self.weights_root_dir = os.path.join(self.sys_home_dir, 'weights')
         self.weights = {
             'pvt_v2_b2': os.path.join(self.weights_root_dir, 'pvt_v2_b2.pth'),
