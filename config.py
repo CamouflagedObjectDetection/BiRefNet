@@ -11,7 +11,7 @@ class Config():
         self.task = ['DIS5K', 'COD', 'HRSOD', 'General', 'Portrait'][1]
         self.training_set = {
             'DIS5K': ['DIS-TR', 'DIS-TR+DIS-TE1+DIS-TE2+DIS-TE3+DIS-TE4'][0],
-            'COD': 'TR-COD10K+TR-CAMO', #TR-COD10K+TR-CAMO
+            'COD': 'TR-COD10K', #TR-COD10K+TR-CAMO
             'HRSOD': ['TR-DUTS', 'TR-HRSOD', 'TR-UHRSD', 'TR-DUTS+TR-HRSOD', 'TR-DUTS+TR-UHRSD', 'TR-HRSOD+TR-UHRSD', 'TR-DUTS+TR-HRSOD+TR-UHRSD'][5],
             'General': 'DIS-TE1+DIS-TE2+DIS-TE3+DIS-TE4+DIS-TR+TR-HRSOD+TE-HRSOD+TR-HRS10K+TE-HRS10K+TR-UHRSD+TE-UHRSD+TR-P3M-10k+TE-P3M-500-NP+TE-P3M-500-P+TR-humans',    # leave DIS-VD for evaluation.
             'Portrait': 'TR-P3M-10k+TE-P3M-500-NP+TR-humans+TR-Distrinctions-646',
@@ -61,7 +61,7 @@ class Config():
             'swin_v1_b', 'swin_v1_l',               # 5-bs9, 6-bs4
             'pvt_v2_b0', 'pvt_v2_b1',               # 7, 8
             'pvt_v2_b2', 'pvt_v2_b5',               # 9-bs10, 10-bs5
-        ][6]
+        ][7]
         self.lateral_channels_in_collection = {
             'vgg16': [512, 256, 128, 64], 'vgg16bn': [512, 256, 128, 64], 'resnet50': [1024, 512, 256, 64],
             'pvt_v2_b2': [512, 320, 128, 64], 'pvt_v2_b5': [512, 320, 128, 64],
