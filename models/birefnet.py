@@ -7,10 +7,9 @@ from huggingface_hub import PyTorchModelHubMixin
 from config import Config
 from dataset import class_labels_TR_sorted
 from models.backbones.build_backbone import build_backbone
-from models.modules.decoder_blocks import BasicDecBlk, ResBlk, HierarAttDecBlk
+from models.modules.decoder_blocks import BasicDecBlk, ResBlk
 from models.modules.lateral_blocks import BasicLatBlk
 from models.modules.aspp import ASPP, ASPPDeformable
-from models.modules.ing import *
 from models.refinement.refiner import Refiner, RefinerPVTInChannels4, RefUNet
 from models.refinement.stem_layer import StemLayer
 
@@ -192,7 +191,7 @@ class Decoder(nn.Module):
             patches_batch = self.get_patches_batch(x, x4) if self.split else x
             x4 = torch.cat((x4, self.ipt_blk5(F.interpolate(patches_batch, size=x4.shape[2:], mode='bilinear', align_corners=True))), 1)
         p4 = self.decoder_block4(x4)
-        m4 = self.conv_ms_spvn_4(p4) if self.config.ms_supervision else None
+        m4 = self.conv_ms_spvn_4(p4) if self.config.ms_supervision and self.training else None
         if self.config.out_ref:
             p4_gdt = self.gdt_convs_4(p4)
             if self.training:
@@ -213,7 +212,7 @@ class Decoder(nn.Module):
             patches_batch = self.get_patches_batch(x, _p3) if self.split else x
             _p3 = torch.cat((_p3, self.ipt_blk4(F.interpolate(patches_batch, size=x3.shape[2:], mode='bilinear', align_corners=True))), 1)
         p3 = self.decoder_block3(_p3)
-        m3 = self.conv_ms_spvn_3(p3) if self.config.ms_supervision else None
+        m3 = self.conv_ms_spvn_3(p3) if self.config.ms_supervision and self.training else None
         if self.config.out_ref:
             p3_gdt = self.gdt_convs_3(p3)
             if self.training:
@@ -239,7 +238,7 @@ class Decoder(nn.Module):
             patches_batch = self.get_patches_batch(x, _p2) if self.split else x
             _p2 = torch.cat((_p2, self.ipt_blk3(F.interpolate(patches_batch, size=x2.shape[2:], mode='bilinear', align_corners=True))), 1)
         p2 = self.decoder_block2(_p2)
-        m2 = self.conv_ms_spvn_2(p2) if self.config.ms_supervision else None
+        m2 = self.conv_ms_spvn_2(p2) if self.config.ms_supervision and self.training else None
         if self.config.out_ref:
             p2_gdt = self.gdt_convs_2(p2)
             if self.training:
@@ -267,7 +266,7 @@ class Decoder(nn.Module):
             _p1 = torch.cat((_p1, self.ipt_blk1(F.interpolate(patches_batch, size=x.shape[2:], mode='bilinear', align_corners=True))), 1)
         p1_out = self.conv_out1(_p1)
 
-        if self.config.ms_supervision:
+        if self.config.ms_supervision and self.training:
             outs.append(m4)
             outs.append(m3)
             outs.append(m2)

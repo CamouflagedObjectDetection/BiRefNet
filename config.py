@@ -14,12 +14,12 @@ class Config():
             'COD': 'TR-COD10K+TR-CAMO', #TR-COD10K+TR-CAMO
             'HRSOD': ['TR-DUTS', 'TR-HRSOD', 'TR-UHRSD', 'TR-DUTS+TR-HRSOD', 'TR-DUTS+TR-UHRSD', 'TR-HRSOD+TR-UHRSD', 'TR-DUTS+TR-HRSOD+TR-UHRSD'][5],
             'General': 'DIS-TE1+DIS-TE2+DIS-TE3+DIS-TE4+DIS-TR+TR-HRSOD+TE-HRSOD+TR-HRS10K+TE-HRS10K+TR-UHRSD+TE-UHRSD+TR-P3M-10k+TE-P3M-500-NP+TE-P3M-500-P+TR-humans',    # leave DIS-VD for evaluation.
-            'Portrait': 'TR-P3M-10k+TE-P3M-500-NP+TR-humans+TR-Distrinctions-646',
+            'Matting': 'TR-P3M-10k+TE-P3M-500-NP+TR-humans+TR-Distrinctions-646',
         }[self.task]
         self.prompt4loc = ['dense', 'sparse'][0]
 
         # Faster-Training settings
-        self.load_all = True    # Turn it on/off by your case. It may consume a lot of CPU memory. And for multi-GPU (N), it would cost N times the CPU memory to load the data.
+        self.load_all = False    # Turn it on/off by your case. It may consume a lot of CPU memory. And for multi-GPU (N), it would cost N times the CPU memory to load the data.
         self.use_fp16 = False   # It may cause nan in training.
         self.compile = True and (not self.use_fp16)     # 1. Trigger CPU memory leak in some extend, which is an inherent problem of PyTorch.
                                                         #   Machines with > 70GB CPU memory can run the whole training on DIS5K with default setting.
@@ -36,18 +36,18 @@ class Config():
         self.mul_scl_ipt = ['', 'add', 'cat'][2]
         self.dec_att = ['', 'ASPP', 'ASPPDeformable'][2]
         self.squeeze_block = ['', 'BasicDecBlk_x1', 'ResBlk_x4', 'ASPP_x3', 'ASPPDeformable_x3'][1]
-        self.dec_blk = ['BasicDecBlk', 'ResBlk', 'HierarAttDecBlk'][0]
+        self.dec_blk = ['BasicDecBlk', 'ResBlk'][0]
 
         # TRAINING settings
         self.batch_size = 4
-        self.IoU_finetune_last_epochs = [
+        self.finetune_last_epochs = [
             0,
             {
-                'DIS5K': -50,
+                'DIS5K': -40,
                 'COD': -20,
                 'HRSOD': -20,
                 'General': -20,
-                'Portrait': -10,
+                'Matting': -20,
             }[self.task]
         ][1]    # choose 0 to skip
         self.lr = (1e-4 if 'DIS5K' in self.task else 1e-5) * math.sqrt(self.batch_size / 4)     # DIS needs high lr to converge faster. Adapt the lr linearly
@@ -86,8 +86,6 @@ class Config():
         self.model = [
             'BiRefNet',
         ][0]
-        if self.dec_blk == 'HierarAttDecBlk':
-            self.batch_size = 2 ** [0, 1, 2, 3, 4][2]
 
         # TRAINING settings - inactive
         self.preproc_methods = ['flip', 'enhance', 'rotate', 'pepper', 'crop'][:4]
@@ -95,20 +93,36 @@ class Config():
         self.lr_decay_epochs = [1e5]    # Set to negative N to decay the lr in the last N-th epoch.
         self.lr_decay_rate = 0.5
         # Loss
-        self.lambdas_pix_last = {
-            # not 0 means opening this loss
-            # original rate -- 1 : 30 : 1.5 : 0.2, bce x 30
-            'bce': 30 * 1,          # high performance
-            'iou': 0.5 * 1,         # 0 / 255
-            'iou_patch': 0.5 * 0,   # 0 / 255, win_size = (64, 64)
-            'mae': 30 * (self.task in ['Portrait']),
-            'mse': 30 * 0,         # can smooth the saliency map
-            'triplet': 3 * 0,
-            'reg': 100 * 0,
-            'ssim': 10 * 1,          # help contours,
-            'cnt': 5 * 0,          # help contours
-            'structure': 5 * 0,    # structure loss from codes of MVANet. A little improvement on DIS-TE[1,2,3], a bit more decrease on DIS-TE4.
-        }
+        if self.task not in ['Matting']:
+            self.lambdas_pix_last = {
+                # not 0 means opening this loss
+                # original rate -- 1 : 30 : 1.5 : 0.2, bce x 30
+                'bce': 30 * 1,          # high performance
+                'iou': 0.5 * 1,         # 0 / 255
+                'iou_patch': 0.5 * 0,   # 0 / 255, win_size = (64, 64)
+                'mae': 30 * 0,
+                'mse': 30 * 0,         # can smooth the saliency map
+                'triplet': 3 * 0,
+                'reg': 100 * 0,
+                'ssim': 10 * 1,          # help contours,
+                'cnt': 5 * 0,          # help contours
+                'structure': 5 * 0,    # structure loss from codes of MVANet. A little improvement on DIS-TE[1,2,3], a bit more decrease on DIS-TE4.
+            }
+        else:
+            self.lambdas_pix_last = {
+                # not 0 means opening this loss
+                # original rate -- 1 : 30 : 1.5 : 0.2, bce x 30
+                'bce': 30 * 0,          # high performance
+                'iou': 0.5 * 0,         # 0 / 255
+                'iou_patch': 0.5 * 0,   # 0 / 255, win_size = (64, 64)
+                'mae': 100 * 1,
+                'mse': 30 * 0,         # can smooth the saliency map
+                'triplet': 3 * 0,
+                'reg': 100 * 0,
+                'ssim': 10 * 1,          # help contours,
+                'cnt': 5 * 0,          # help contours
+                'structure': 5 * 0,    # structure loss from codes of MVANet. A little improvement on DIS-TE[1,2,3], a bit more decrease on DIS-TE4.
+            }
         self.lambdas_cls = {
             'ce': 5.0
         }
@@ -141,11 +155,11 @@ class Config():
         self.batch_size_valid = 1
         self.rand_seed = 7
         run_sh_file = [f for f in os.listdir('.') if 'train.sh' == f] + [os.path.join('..', f) for f in os.listdir('..') if 'train.sh' == f]
-        with open(run_sh_file[0], 'r') as f:
-            lines = f.readlines()
-            self.save_last = int([l.strip() for l in lines if '"{}")'.format(self.task) in l and 'val_last=' in l][0].split('val_last=')[-1].split()[0])
-            self.save_step = int([l.strip() for l in lines if '"{}")'.format(self.task) in l and 'step=' in l][0].split('step=')[-1].split()[0])
-        self.val_step = [0, self.save_step][0]
+        if run_sh_file:
+            with open(run_sh_file[0], 'r') as f:
+                lines = f.readlines()
+                self.save_last = int([l.strip() for l in lines if '"{}")'.format(self.task) in l and 'val_last=' in l][0].split('val_last=')[-1].split()[0])
+                self.save_step = int([l.strip() for l in lines if '"{}")'.format(self.task) in l and 'step=' in l][0].split('step=')[-1].split()[0])
 
     def print_task(self) -> None:
         # Return task for choosing settings in shell scripts.
