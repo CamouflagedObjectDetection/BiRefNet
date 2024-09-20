@@ -4,8 +4,8 @@
 method="$1"
 task=$(python3 config.py)
 case "${task}" in
-    "DIS5K") epochs=600 && val_last=50 && step=5 ;;
-    "COD") epochs=150 && val_last=50 && step=5 ;;
+    "DIS5K") epochs=600 && val_last=100 && step=5 ;;
+    "COD") epochs=100 && val_last=100 && step=1 ;;
     "HRSOD") epochs=150 && val_last=50 && step=5 ;;
     "General") epochs=250 && val_last=20 && step=2 ;;
     "Matting") epochs=100 && val_last=20 && step=2 ;;
@@ -36,7 +36,7 @@ else
     python train.py --ckpt_dir ckpt/${method} --epochs ${epochs} \
         --testsets ${testsets} \
         --dist ${to_be_distributed} \
-        --resume xx/xx-epoch_244.pth
+        --resume /home/amin_chini/cod/BiRefNet/weights/BiRefNet-COD-epoch_1.pth
 fi
 
 echo Training finished at $(date)

@@ -117,7 +117,14 @@ def init_models_optimizers(epochs, to_be_distributed):
         model = torch.compile(model, mode=['default', 'reduce-overhead', 'max-autotune'][0])
     if config.precisionHigh:
         torch.set_float32_matmul_precision('high')
-
+    # sum_p = 0
+    for k, v in model.named_parameters():
+        # logger.info(f'{k}, {v.requires_grad}, {v.numel()}')
+        if '.bb.' in k:
+            # sum_p += v.numel()
+            v.requires_grad = False
+    # print(sum_p)
+    # exit()
 
     # Setting optimizer
     if config.optimizer == 'AdamW':

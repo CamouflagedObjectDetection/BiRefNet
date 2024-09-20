@@ -87,7 +87,7 @@ if __name__ == '__main__':
     parser.add_argument('--testsets',
                         default={
                             'DIS5K': 'DIS-VD+DIS-TE1+DIS-TE2+DIS-TE3+DIS-TE4',
-                            'COD': 'TE-COD10K+NC4K+TE-CAMO+CHAMELEON',
+                            'COD': 'TE-MHCD',
                             'HRSOD': 'DAVIS-S+TE-HRSOD+TE-UHRSD+TE-DUTS+DUT-OMRON',
                             'General': 'DIS-VD',
                             'Matting': 'TE-AM2k',
